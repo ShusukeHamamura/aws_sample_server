@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const bodyParser = require("body-parser");
 
 const port = 3001;
 
@@ -10,59 +11,66 @@ const dynamoDB = new AWS.DynamoDB();
 const documentClient = new AWS.DynamoDB.DocumentClient();
 
 app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.send("test");
 });
 
-app.get("/api2", (req, res) => {
+app.post("/api/test", (req, res) => {
   res.send([
     {
       car_type: "Car",
       device_id: "jetson_orin_1",
-      date: "2023-04-05 20:22:24",
+      date: "2023-04-07T15:58:13",
       car_id: 0,
       direction: 0,
     },
     {
-      car_type: "Bike",
+      car_type: "Car",
       device_id: "jetson_orin_1",
-      date: "2023-04-05 20:22:29",
+      date: "2023-04-07T15:58:18",
       car_id: 1,
       direction: 0,
     },
     {
-      car_type: "Car",
+      car_type: "Bike",
       device_id: "jetson_orin_1",
-      date: "2023-04-05 20:22:34",
+      date: "2023-04-07T15:58:23",
       car_id: 2,
       direction: 0,
     },
     {
+      car_type: "Car",
+      device_id: "jetson_orin_1",
+      date: "2023-04-07T15:58:28",
+      car_id: 3,
+      direction: 1,
+    },
+    {
       car_type: "Bike",
       device_id: "jetson_orin_1",
-      date: "2023-04-05 20:22:39",
-      car_id: 3,
-      direction: 0,
-    },
-    {
-      car_type: "Car",
-      device_id: "jetson_orin_1",
-      date: "2023-04-05 20:22:44",
+      date: "2023-04-07T15:58:33",
       car_id: 4,
-      direction: 0,
+      direction: 1,
     },
     {
-      car_type: "Car",
+      car_type: "Bike",
       device_id: "jetson_orin_1",
-      date: "2023-04-07 20:22:24",
-      car_id: 10,
-      direction: 0,
+      date: "2023-04-07T15:58:33",
+      car_id: 5,
+      direction: 1,
     },
   ]);
 });
 
-app.get("/api", (req, res) => {
+app.post("/api", (req, res) => {
+  const date = req.body.date;
+  const date1 = `${date}T00:00:00`;
+  const date2 = `${date}T23:59:59`;
+  console.log(date1);
+  console.log(date2);
   const params = {
     TableName: "car_table",
     KeyConditionExpression:
@@ -73,14 +81,14 @@ app.get("/api", (req, res) => {
     },
     ExpressionAttributeValues: {
       ":pk_prm": "jetson_orin_1",
-      ":sk_prm1": "2023-04-07T15:51:09",
-      ":sk_prm2": "2023-04-07T16:00:14",
+      ":sk_prm1": date1,
+      ":sk_prm2": date2,
     },
   };
   documentClient.query(params, (err, data) => {
     if (err) console.log("error", JSON.stringify(err, null, 2));
     else {
-      console.log("success!!");
+      console.log(data.Items);
       res.send(data.Items);
     }
   });
