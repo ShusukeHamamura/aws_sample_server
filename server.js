@@ -6,16 +6,17 @@ const bodyParser = require("body-parser");
 const port = 3001;
 
 const AWS = require("aws-sdk");
-AWS.config.loadFromPath("./config.json");
+AWS.config.loadFromPath("../config.json");
 const dynamoDB = new AWS.DynamoDB();
 const documentClient = new AWS.DynamoDB.DocumentClient();
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "../aws_sample_client/build")));
 
-app.get("/", (req, res) => {
-  res.send("test");
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../aws_sample_client/build/index.html"));
 });
 
 app.post("/api/test", (req, res) => {
