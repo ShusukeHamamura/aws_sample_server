@@ -22,28 +22,29 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //   res.sendFile(path.join(__dirname, "../aws_sample_client/build/index.html"));
 // });
 
-app.post("/api/test", (req, res) => {
-  console.log(data);
+app.get("/api/test", (req, res) => {
+  console.log("test success");
   res.send(data);
 });
 
+// DynamoDBからデータを取得するAPI
 app.post("/api", (req, res) => {
   const date = req.body.date;
-  const device_id = req.body.device_id;
+  const location = req.body.location;
   const date1 = `${date}T00:00:00`;
   const date2 = `${date}T23:59:59`;
   console.log(date1);
   console.log(date2);
   const params = {
-    TableName: "car_table",
+    TableName: "traffic_survey",
     KeyConditionExpression:
       "#pk_name = :pk_prm AND #sk_name BETWEEN :sk_prm1 AND :sk_prm2",
     ExpressionAttributeNames: {
-      "#pk_name": "device_id",
-      "#sk_name": "date",
+      "#pk_name": "location",
+      "#sk_name": "timestamp",
     },
     ExpressionAttributeValues: {
-      ":pk_prm": device_id,
+      ":pk_prm": location,
       ":sk_prm1": date1,
       ":sk_prm2": date2,
     },
@@ -52,15 +53,17 @@ app.post("/api", (req, res) => {
     if (err) console.log("error", JSON.stringify(err, null, 2));
     else {
       console.log(data.Items.length);
+      console.log("api success");
       // console.log(data.Items);
       res.send(data.Items);
     }
   });
 });
 
+// S3からCSVファイルを取得するAPI
 app.post("/api2", (req, res) => {
   const date = req.body.date;
-  console.log("DownloadCSV");
+  console.log("DownloadCSV1");
   params = { Bucket: "orinplan", Key: `${date}_natural_data.csv` };
   try {
     s3.getSignedUrl("getObject", params, (err, url) => {
@@ -74,7 +77,7 @@ app.post("/api2", (req, res) => {
 });
 app.post("/api3", (req, res) => {
   const date = req.body.date;
-  console.log("DownloadCSV");
+  console.log("DownloadCSV2");
   params = { Bucket: "orinplan", Key: `${date}_format_data.csv` };
   try {
     s3.getSignedUrl("getObject", params, (err, url) => {
